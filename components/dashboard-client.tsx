@@ -1,45 +1,39 @@
 "use client";
-import { AppSidebar } from "@/components/app-sidebar";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
-import { SectionCards } from "@/components/section-cards";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-export interface DashboardClientProps {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-  data: any[];
-}
+import { useAIChat } from "@/hooks/use-ai-chat";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-export function DashboardClient({ user, data }: DashboardClientProps) {
+export function AIChat({
+  provider = "openai",
+}: {
+  provider?: "openai" | "gemini";
+}) {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useAIChat(provider);
+
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" user={user} />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
-              <DataTable data={data} />
-            </div>
+    <div className="flex flex-col gap-4">
+      <div className="h-64 overflow-y-auto border p-4">
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`mb-2 ${m.role === "user" ? "text-right" : "text-left"}`}
+          >
+            <strong>{m.role}:</strong> {m.content}
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <Input
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Ask AI..."
+        />
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Generating..." : "Send"}
+        </Button>
+      </form>
+    </div>
   );
 }
