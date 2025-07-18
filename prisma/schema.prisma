@@ -1,0 +1,37 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// This model represents a user's public profile.
+// It is designed to extend the built-in Supabase auth.users table.
+model Profile {
+  // This 'id' is a foreign key that MUST match the 'id'
+  // from the Supabase auth.users table.
+  // The default value is set by our SQL trigger, not by Prisma.
+  id        String   @id @db.Uuid
+
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+
+  // We are mapping this model to a table named 'profiles' in our database.
+  @@map("profiles")
+}
+
+model Sample {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("samples")
+}
