@@ -39,8 +39,6 @@ next-env.d.ts
 # Prisma
 # Keep schema.prisma but ignore generated files
 /lib/generated/
-/prisma/dev.db
-/prisma/dev.db-journal
 
 # IDE
 .vscode/
