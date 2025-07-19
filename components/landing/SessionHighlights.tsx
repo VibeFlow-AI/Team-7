@@ -44,7 +44,7 @@ const mockMentors = [
 
 export function SessionHighlights() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
+    <section className="w-full flex justify-center items-center py-12 md:py-24 lg:py-32">
       <div className="container px-4 md:px-6">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
