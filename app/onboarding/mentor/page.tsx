@@ -21,15 +21,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RouteGuard } from "@/components/route-guard";
 import { useAuth } from "@/components/auth-provider";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { createMentorProfile } from "./actions";
+import { useFormPersistence } from "@/hooks/use-form-persistence";
 
 export default function MentorOnboardingPage() {
   const { userProfile, loading } = useAuth();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+
+  const initialFormData = {
     fullName: "",
     age: "",
     email: "",
@@ -40,17 +43,35 @@ export default function MentorOnboardingPage() {
     professionalRole: "",
     subjectsToTeach: "",
     teachingExperience: "",
-    preferredStudentLevels: "",
+    preferredStudentLevels: [] as string[],
     linkedInProfile: "",
     githubOrPortfolio: "",
-  });
+    profilePicture: null as File | null,
+  };
+
+  const [formData, setFormData, clearForm] = useFormPersistence(
+    "mentor-onboarding-form",
+    initialFormData
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
+  // Student level options
+  const studentLevelOptions = [
+    "Grade 3-5",
+    "Grade 6-9",
+    "Grade 10-11",
+    "Advanced Level",
+    "High School",
+    "College",
+    "Professional",
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -58,10 +79,30 @@ export default function MentorOnboardingPage() {
   };
 
   const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [name]: value });
     // Clear error for this field when user makes a selection
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleCheckboxChange = (level: string, checked: boolean) => {
+    const currentLevels = formData.preferredStudentLevels || [];
+    const updatedLevels = checked
+      ? [...currentLevels, level]
+      : currentLevels.filter((l) => l !== level);
+
+    setFormData({ ...formData, preferredStudentLevels: updatedLevels });
+
+    if (errors.preferredStudentLevels) {
+      setErrors((prev) => ({ ...prev, preferredStudentLevels: "" }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, profilePicture: file });
     }
   };
 
@@ -96,7 +137,10 @@ export default function MentorOnboardingPage() {
       newErrors.subjectsToTeach = "Subjects to teach are required";
     }
 
-    if (!formData.preferredStudentLevels.trim()) {
+    if (
+      !formData.preferredStudentLevels ||
+      formData.preferredStudentLevels.length === 0
+    ) {
       newErrors.preferredStudentLevels =
         "Preferred student levels are required";
     }
@@ -116,8 +160,15 @@ export default function MentorOnboardingPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await createMentorProfile(formData);
+      // Convert form data to match API expectations
+      const apiFormData = {
+        ...formData,
+        preferredStudentLevels: formData.preferredStudentLevels.join(", "),
+      };
+
+      const result = await createMentorProfile(apiFormData);
       if (result.success) {
+        clearForm(); // Clear form data from localStorage
         router.push("/dashboard");
       } else {
         alert(result.message);
@@ -336,19 +387,26 @@ export default function MentorOnboardingPage() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="preferredStudentLevels">
-                    Preferred Student Levels (comma-separated)
-                  </Label>
-                  <Input
-                    id="preferredStudentLevels"
-                    name="preferredStudentLevels"
-                    value={formData.preferredStudentLevels}
-                    onChange={handleChange}
-                    placeholder="e.g., Grade 9, Ordinary Level, Advanced Level"
-                    className={
-                      errors.preferredStudentLevels ? "border-red-500" : ""
-                    }
-                  />
+                  <Label>Preferred Student Levels</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {studentLevelOptions.map((level) => (
+                      <div key={level} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={level}
+                          checked={
+                            formData.preferredStudentLevels?.includes(level) ||
+                            false
+                          }
+                          onCheckedChange={(checked) =>
+                            handleCheckboxChange(level, checked as boolean)
+                          }
+                        />
+                        <Label htmlFor={level} className="text-sm font-normal">
+                          {level}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                   {errors.preferredStudentLevels && (
                     <p className="text-sm text-red-500">
                       {errors.preferredStudentLevels}
@@ -384,6 +442,52 @@ export default function MentorOnboardingPage() {
                     onChange={handleChange}
                     placeholder="https://github.com/yourusername"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="profilePicture">
+                    Profile Picture (Optional)
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="profilePicture"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          document.getElementById("profilePicture")?.click()
+                        }
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {formData.profilePicture
+                          ? "Change Image"
+                          : "Upload Image"}
+                      </Button>
+                    </div>
+                    {formData.profilePicture && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {formData.profilePicture.name}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setFormData({ ...formData, profilePicture: null })
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

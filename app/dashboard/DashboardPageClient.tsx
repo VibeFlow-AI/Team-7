@@ -45,6 +45,11 @@ export default function DashboardPageClient() {
     redirect("/dashboard/student");
   }
 
+  // Redirect mentors to the mentor dashboard
+  if (userProfile?.role === "MENTOR") {
+    redirect("/dashboard/mentor");
+  }
+
   // Create a plain serializable user object to avoid serialization issues
   const sidebarUser = {
     name: String(user?.user_metadata?.name || user?.email || "User"),
