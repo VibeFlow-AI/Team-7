@@ -3,20 +3,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
-import { Footer } from "@/components/landing/Footer";
-import { Header } from "@/components/landing/Header";
-import { Hero } from "@/components/landing/Hero";
-import { SessionHighlights } from "@/components/landing/SessionHighlights";
-import StudentFeatures from "@/components/landing/StudentFeatures";
+import { AuthForm } from "@/components/auth-form";
 import { Loader2 } from "lucide-react";
 
-export default function LandingPage() {
-  const { session, user, userProfile, loading, needsOnboarding } = useAuth();
+export default function SignUpPage() {
+  const { session, userProfile, loading, needsOnboarding } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading) return; // Wait for auth to load
 
+    // If user is already authenticated, redirect appropriately
     if (session) {
       if (needsOnboarding) {
         router.push("/onboarding");
@@ -31,6 +28,7 @@ export default function LandingPage() {
     }
   }, [session, userProfile, loading, needsOnboarding, router]);
 
+  // Show loading while checking auth
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -42,6 +40,7 @@ export default function LandingPage() {
     );
   }
 
+  // If user is already authenticated, show loading while redirecting
   if (session) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -54,14 +53,10 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      <Header />
-      <main className="flex-1 justify-center items-center">
-        <Hero />
-        <StudentFeatures />
-        <SessionHighlights />
-      </main>
-      <Footer />
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-md">
+        <AuthForm mode="signup" />
+      </div>
     </div>
   );
 }

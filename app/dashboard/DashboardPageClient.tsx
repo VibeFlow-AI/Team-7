@@ -6,9 +6,10 @@ import {
   DashboardClient,
   DashboardDataItem,
 } from "@/components/ui/dashboard-client";
+import { StudentDashboard } from "./student-dashboard";
 
 export default function DashboardPageClient() {
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const [data, setData] = React.useState<DashboardDataItem[]>([]);
   const [dataLoading, setDataLoading] = React.useState(true);
 
@@ -36,7 +37,18 @@ export default function DashboardPageClient() {
     loadData();
   }, []);
 
-  if (loading || !user || dataLoading) return null;
+  // Only show loading on initial load, not on tab switches
+  if ((loading && !user) || dataLoading) return null;
+
+  // Redirect students to the student dashboard
+  if (userProfile?.role === "STUDENT") {
+    redirect("/dashboard/student");
+  }
+
+  // Redirect mentors to the mentor dashboard
+  if (userProfile?.role === "MENTOR") {
+    redirect("/dashboard/mentor");
+  }
 
   // Create a plain serializable user object to avoid serialization issues
   const sidebarUser = {
@@ -46,7 +58,7 @@ export default function DashboardPageClient() {
   };
 
   // Ensure data is serializable by creating a plain copy
-  const serializedData = data.map(item => ({
+  const serializedData = data.map((item) => ({
     id: Number(item.id),
     header: String(item.header),
     type: String(item.type),
