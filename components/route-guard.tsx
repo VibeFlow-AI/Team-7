@@ -33,7 +33,12 @@ export function RouteGuard({
     }
 
     // If user is authenticated but needs onboarding
-    if (session && needsOnboarding && pathname !== "/onboarding") {
+    if (
+      session &&
+      needsOnboarding &&
+      pathname !== "/onboarding" &&
+      !pathname.startsWith("/onboarding/")
+    ) {
       router.push("/onboarding");
       return;
     }
@@ -83,7 +88,12 @@ export function RouteGuard({
   }
 
   // If user needs onboarding but is not on onboarding page, show nothing while redirecting
-  if (session && needsOnboarding && pathname !== "/onboarding") {
+  if (
+    session &&
+    needsOnboarding &&
+    pathname !== "/onboarding" &&
+    !pathname.startsWith("/onboarding/")
+  ) {
     return null;
   }
 

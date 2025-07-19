@@ -12,18 +12,22 @@ import { Loader2 } from "lucide-react";
 export default function OnboardingRoleSelectionPage() {
   const { userProfile, updateUserRole, loading } = useAuth();
   const router = useRouter();
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
 
   const handleRoleSelection = async (role: "STUDENT" | "MENTOR") => {
     try {
-      setIsUpdating(true);
+      setUpdatingRole(role);
       await updateUserRole(role);
+
+      // Small delay to ensure profile is updated
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       router.push(`/onboarding/${role.toLowerCase()}`);
     } catch (error) {
       console.error("Error updating role:", error);
       // You might want to show a toast notification here
     } finally {
-      setIsUpdating(false);
+      setUpdatingRole(null);
     }
   };
 
@@ -59,9 +63,9 @@ export default function OnboardingRoleSelectionPage() {
               <Button
                 className="w-full"
                 onClick={() => handleRoleSelection("STUDENT")}
-                disabled={isUpdating}
+                disabled={updatingRole !== null}
               >
-                {isUpdating ? (
+                {updatingRole === "STUDENT" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Setting up...
@@ -79,9 +83,9 @@ export default function OnboardingRoleSelectionPage() {
               <Button
                 className="w-full"
                 onClick={() => handleRoleSelection("MENTOR")}
-                disabled={isUpdating}
+                disabled={updatingRole !== null}
               >
-                {isUpdating ? (
+                {updatingRole === "MENTOR" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Setting up...
