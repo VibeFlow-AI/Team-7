@@ -50,7 +50,11 @@ export function Header() {
         {session ? (
           <>
             <Link
-              href="/dashboard"
+              href={
+                userProfile?.role === "MENTOR"
+                  ? "/dashboard/mentor"
+                  : "/dashboard/student"
+              }
               className="text-sm font-medium hover:underline underline-offset-4"
               prefetch={false}
             >

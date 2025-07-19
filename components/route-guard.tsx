@@ -59,9 +59,9 @@ export function RouteGuard({
       if (userProfile?.role === "STUDENT") {
         router.push("/dashboard/student");
       } else if (userProfile?.role === "MENTOR") {
-        router.push("/dashboard");
+        router.push("/dashboard/mentor");
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard/student"); // Default to student dashboard
       }
       return;
     }

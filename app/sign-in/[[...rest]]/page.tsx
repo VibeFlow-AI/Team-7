@@ -21,8 +21,10 @@ export default function SignInPage() {
         // Redirect based on user role
         if (userProfile?.role === "STUDENT") {
           router.push("/dashboard/student");
+        } else if (userProfile?.role === "MENTOR") {
+          router.push("/dashboard/mentor");
         } else {
-          router.push("/dashboard");
+          router.push("/dashboard/student"); // Default to student dashboard
         }
       }
     }

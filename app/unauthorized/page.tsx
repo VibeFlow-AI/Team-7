@@ -22,7 +22,7 @@ export default function UnauthorizedPage() {
               Please contact an administrator if you believe this is an error.
             </p>
             <div className="space-y-2">
-              <Link href="/dashboard" className="w-full">
+              <Link href="/dashboard/student" className="w-full">
                 <Button className="w-full">Go to Dashboard</Button>
               </Link>
               <Link href="/" className="w-full">

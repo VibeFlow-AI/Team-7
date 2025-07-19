@@ -169,7 +169,7 @@ export default function MentorOnboardingPage() {
       const result = await createMentorProfile(apiFormData);
       if (result.success) {
         clearForm(); // Clear form data from localStorage
-        router.push("/dashboard");
+        router.push("/dashboard/mentor");
       } else {
         alert(result.message);
       }

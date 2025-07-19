@@ -62,7 +62,7 @@ export async function createStudentProfile(formData: StudentFormData) {
       data: { role: "STUDENT" },
     });
 
-    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/student");
     revalidatePath("/onboarding");
 
     return { success: true, message: "Student profile created successfully" };
