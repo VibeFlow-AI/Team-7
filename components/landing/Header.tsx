@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   return (
@@ -34,6 +35,7 @@ export function Header() {
         >
           About
         </Link>
+        <ModeToggle />
         <Link href="/sign-in">
           <Button>Get Started</Button>
         </Link>
