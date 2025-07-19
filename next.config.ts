@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {},
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {
