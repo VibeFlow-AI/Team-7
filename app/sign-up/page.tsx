@@ -6,7 +6,7 @@ import { useAuth } from "@/components/auth-provider";
 import { AuthForm } from "@/components/auth-form";
 import { Loader2 } from "lucide-react";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const { session, userProfile, loading, needsOnboarding } = useAuth();
   const router = useRouter();
 
@@ -55,7 +55,7 @@ export default function SignInPage() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-md">
-        <AuthForm mode="signin" />
+        <AuthForm mode="signup" />
       </div>
     </div>
   );
