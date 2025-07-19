@@ -4,9 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createSupabaseServerClient();
     const body = await request.json();
 
@@ -39,7 +40,7 @@ export async function PATCH(
 
     // Get the session to check permissions
     const session = await prisma.session.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         student: true,
         mentor: true,
@@ -64,7 +65,7 @@ export async function PATCH(
 
     // Update session status
     const updatedSession = await prisma.session.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
       include: {
         mentor: {
