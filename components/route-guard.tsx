@@ -55,7 +55,14 @@ export function RouteGuard({
 
     // If user is on onboarding page but doesn't need onboarding
     if (session && !needsOnboarding && pathname === "/onboarding") {
-      router.push("/dashboard");
+      // Redirect to appropriate dashboard based on role
+      if (userProfile?.role === "STUDENT") {
+        router.push("/dashboard/student");
+      } else if (userProfile?.role === "MENTOR") {
+        router.push("/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
       return;
     }
   }, [
@@ -70,8 +77,8 @@ export function RouteGuard({
     pathname,
   ]);
 
-  // Show loading spinner while checking auth
-  if (loading) {
+  // Show loading spinner only on initial load, not on tab switches
+  if (loading && !session && !userProfile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex items-center gap-2">

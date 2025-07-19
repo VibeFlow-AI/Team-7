@@ -17,10 +17,16 @@ export function useSupabaseAuth() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Fetch user profile from API
   const fetchUserProfile = async (userId: string) => {
     if (!userId) return;
+
+    // Check if we already have a profile for this user
+    if (userProfile && userProfile.id === userId) {
+      return;
+    }
 
     try {
       setProfileLoading(true);
@@ -122,6 +128,7 @@ export function useSupabaseAuth() {
         setUserProfile(null);
       } finally {
         setLoading(false);
+        setHasInitialized(true);
       }
     };
 
@@ -152,15 +159,34 @@ export function useSupabaseAuth() {
   const needsOnboarding = userProfile ? requiresOnboarding(userProfile) : false;
   const canAccess = userProfile ? canAccessDashboard(userProfile) : false;
 
+  // Sign out function
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+        throw error;
+      }
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      setUserProfile(null);
+    } catch (error) {
+      console.error("Error signing out:", error);
+      throw error;
+    }
+  };
+
   return {
     session,
     user,
     userProfile,
-    loading: loading || profileLoading,
+    loading: (!hasInitialized && loading) || profileLoading,
     isGuest,
     needsOnboarding,
     canAccess,
     updateUserRole,
     refetchProfile: () => (user?.id ? fetchUserProfile(user.id) : null),
+    signOut,
   };
 }
