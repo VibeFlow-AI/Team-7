@@ -21,7 +21,12 @@ export default function LandingPage() {
       if (needsOnboarding) {
         router.push("/onboarding");
       } else {
-        router.push("/dashboard");
+        // Redirect based on user role
+        if (userProfile?.role === "STUDENT") {
+          router.push("/dashboard/student");
+        } else {
+          router.push("/dashboard");
+        }
       }
     }
   }, [session, userProfile, loading, needsOnboarding, router]);

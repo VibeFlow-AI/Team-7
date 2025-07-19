@@ -143,7 +143,7 @@ export default function StudentOnboardingPage() {
       const result = await createStudentProfile(formData);
       if (result.success) {
         clearForm(); // Clear form data from localStorage
-        router.push("/dashboard");
+        router.push("/dashboard/student");
       } else {
         alert(result.message);
       }
