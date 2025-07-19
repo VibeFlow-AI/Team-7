@@ -1,0 +1,66 @@
+# Node modules
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build output
+.next/
+out/
+dist/
+coverage/
+build/
+
+# Local env files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/*/README.md
+
+# Supabase
+.supabase/
+.supabase/config.toml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# Misc
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Ignore generated types (if any)
+src/generated/
+
+.next
+.qodo
+README.md
+pnpm.lock.yaml
+package-lock.json
+src
+server
+public
+prisma/migrations
+components/ui
+.next
+.git

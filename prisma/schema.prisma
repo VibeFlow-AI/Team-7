@@ -1,24 +1,80 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-model Sample {
-  id String @id @default(cuid())
+// Enum for user roles
+enum Role {
+  STUDENT
+  MENTOR
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Extends the Supabase auth.users table
+model User {
+  id    String @id @db.Uuid
+  role  Role
+  email String @unique
 
-  @@map("samples")
+  studentProfile Student?
+  mentorProfile  Mentor?
+
+  @@map("users")
+}
+
+model Student {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique @db.Uuid
+  user                    User      @relation(fields: [userId], references: [id])
+  fullName                String
+  age                     Int
+  contactNumber           String?
+  currentEducationLevel   String // e.g., "Grade 9", "Ordinary Level", "Advanced Level"
+  school                  String?
+  subjectsOfInterest      String[]
+  preferredLearningStyle  String? // e.g., "Visual", "Hands-On"
+  learningDisabilities    String?
+
+  bookedSessions Session[]
+}
+
+model Mentor {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique @db.Uuid
+  user                    User      @relation(fields: [userId], references: [id])
+  fullName                String
+  age                     Int
+  contactNumber           String?
+  preferredLanguage       String[]
+  currentLocation         String?
+  shortBio                String
+  professionalRole        String
+  subjectsToTeach         String[]
+  teachingExperience      String // e.g., "1-3 years", "5+ years"
+  preferredStudentLevels  String[] // e.g., "Grade 6-9", "Advanced Level"
+  linkedInProfile         String
+  githubOrPortfolio       String?
+  profilePictureUrl       String?
+
+  sessions Session[]
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id])
+  mentorId      String
+  mentor        Mentor   @relation(fields: [mentorId], references: [id])
+  sessionDate   DateTime
+  durationHours Int      @default(2)
+  status        String   @default("Booked") // e.g., "Booked", "Completed", "Cancelled"
+  bankSlipUrl   String
+  createdAt     DateTime @default(now())
 }

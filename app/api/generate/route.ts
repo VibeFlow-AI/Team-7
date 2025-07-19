@@ -1,0 +1,22 @@
+import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
+import { generateText } from "ai";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  const { prompt, provider = "openai" } = await req.json(); // Accept provider: "openai" or "gemini"
+
+  try {
+    const model =
+      provider === "gemini"
+        ? google("models/gemini-1.5-flash-latest")
+        : openai("gpt-4o-mini");
+    const { text } = await generateText({
+      model,
+      prompt,
+    });
+    return NextResponse.json({ text });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
