@@ -149,3 +149,4 @@ temp/
 *.sw?
 database.db
 prisma/prisma/dev.db
+.claude/settings.local.json
