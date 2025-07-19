@@ -4,7 +4,7 @@ import { ModeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   return (
-    <header className="px-4 sm:min-w-7xl lg:px-6 h-25 flex items-center self-center bg-background/80 backdrop-blur-sm rounded-b-2xl shadow-sm top-0">
+    <header className="px-4 md:min-w-[70%] lg:px-6 h-25 flex items-center self-center bg-background/80 backdrop-blur-sm rounded-b-2xl shadow-sm top-0">
       {/* Left section - Logo */}
       <div className="flex items-center">
         <Link

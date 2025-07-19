@@ -2,7 +2,8 @@ import { Footer } from "@/components/landing/Footer";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { SessionHighlights } from "@/components/landing/SessionHighlights";
-import { StudentFeatures } from "@/components/landing/StudentFeatures";
+import StudentFeatures from "@/components/landing/StudentFeatures";
+// import { StudentFeatures } from "@/components/landing/StudentFeatures";
 
 export default function LandingPage() {
   return (
