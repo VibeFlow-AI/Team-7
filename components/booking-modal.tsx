@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MockMentor } from "@/lib/mock-data";
+import { Mentor } from "@/hooks/use-mentors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface BookingModalProps {
-  mentor: MockMentor;
+  mentor: Mentor;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -140,7 +140,10 @@ export function BookingModal({ mentor, isOpen, onClose }: BookingModalProps) {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                       <span className="text-sm font-semibold text-primary">
-                        {mentor.initials}
+                        {mentor.fullName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </span>
                     </div>
                     <div>
@@ -148,7 +151,7 @@ export function BookingModal({ mentor, isOpen, onClose }: BookingModalProps) {
                         Session with {mentor.fullName}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {mentor.subjects.join(", ")}
+                        {mentor.subjectsToTeach.join(", ")}
                       </p>
                     </div>
                   </div>

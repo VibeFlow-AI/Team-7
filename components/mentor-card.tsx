@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MockMentor } from "@/lib/mock-data";
-import { getMatchingReasons } from "@/lib/matching-algorithm";
+import { useState } from "react";
+import { Mentor } from "@/hooks/use-mentors";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Bookmark,
   Star,
@@ -19,22 +19,50 @@ import {
 import { BookingModal } from "@/components/booking-modal";
 
 interface MentorCardProps {
-  mentor: MockMentor;
+  mentor: Mentor;
 }
 
 export function MentorCard({ mentor }: MentorCardProps) {
   const { userProfile } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [matchingReasons, setMatchingReasons] = useState<string[]>([]);
 
-  // Get matching reasons when component mounts
-  useEffect(() => {
-    if (userProfile) {
-      const reasons = getMatchingReasons(userProfile, mentor);
-      setMatchingReasons(reasons);
+  // Generate matching reasons based on student profile
+  const getMatchingReasons = () => {
+    if (!userProfile?.studentProfile) return [];
+
+    const reasons: string[] = [];
+    const studentSubjects = userProfile.studentProfile.subjectsOfInterest || [];
+    const studentLevel = userProfile.studentProfile.currentEducationLevel;
+
+    // Check subject matches
+    const subjectMatches = studentSubjects.filter((subject) =>
+      mentor.subjectsToTeach.some((mentorSubject) =>
+        mentorSubject.toLowerCase().includes(subject.toLowerCase())
+      )
+    );
+
+    if (subjectMatches.length > 0) {
+      reasons.push(`Teaches ${subjectMatches.join(", ")}`);
     }
-  }, [userProfile, mentor]);
+
+    // Check education level
+    if (mentor.preferredStudentLevels.includes(studentLevel)) {
+      reasons.push(`Teaches your level: ${studentLevel}`);
+    }
+
+    // Check experience
+    if (
+      mentor.teachingExperience.includes("5+") ||
+      mentor.teachingExperience.includes("10+")
+    ) {
+      reasons.push("Highly experienced educator");
+    }
+
+    return reasons;
+  };
+
+  const matchingReasons = getMatchingReasons();
 
   const handleBookSession = () => {
     setShowBookingModal(true);
@@ -67,18 +95,29 @@ export function MentorCard({ mentor }: MentorCardProps) {
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-semibold shadow-sm ${getInitialsColor(mentor.initials)}`}
-              >
-                {mentor.initials}
-              </div>
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={mentor.profilePictureUrl || undefined} />
+                <AvatarFallback
+                  className={`${getInitialsColor(
+                    mentor.fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                  )}`}
+                >
+                  {mentor.fullName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
               <div>
                 <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
                   {mentor.fullName}
                 </h3>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <MapPin className="h-3 w-3" />
-                  {mentor.location}
+                  {mentor.currentLocation || "Location not specified"}
                 </div>
               </div>
             </div>
@@ -97,7 +136,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
           {/* Subjects */}
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">
-              {mentor.subjects.slice(0, 3).map((subject) => (
+              {mentor.subjectsToTeach.slice(0, 3).map((subject) => (
                 <Badge
                   key={subject}
                   variant="secondary"
@@ -106,9 +145,9 @@ export function MentorCard({ mentor }: MentorCardProps) {
                   {subject}
                 </Badge>
               ))}
-              {mentor.subjects.length > 3 && (
+              {mentor.subjectsToTeach.length > 3 && (
                 <Badge variant="outline" className="text-xs">
-                  +{mentor.subjects.length - 3} more
+                  +{mentor.subjectsToTeach.length - 3} more
                 </Badge>
               )}
             </div>
@@ -123,7 +162,7 @@ export function MentorCard({ mentor }: MentorCardProps) {
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
-              <span>Duration: {mentor.sessionDuration}</span>
+              <span>Duration: 2 hours (standard)</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Languages className="h-4 w-4" />
@@ -135,13 +174,13 @@ export function MentorCard({ mentor }: MentorCardProps) {
             </div>
           </div>
 
-          {/* Rating and Experience */}
+          {/* Experience */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 text-yellow-500 fill-current" />
-              <span className="text-sm font-medium">{mentor.rating}</span>
+              <span className="text-sm font-medium">5.0</span>
               <span className="text-sm text-muted-foreground">
-                ({mentor.totalSessions} sessions)
+                (Experienced)
               </span>
             </div>
             <div className="text-sm text-muted-foreground">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
-import { mockBookedSessions, BookedSession } from "@/lib/mock-bookings";
+import { useSessions } from "@/hooks/use-sessions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,13 +20,14 @@ import {
   TrendingUp,
   CheckCircle,
   MessageCircle,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 
 export function StudentDashboard() {
   const { userProfile, loading } = useAuth();
   const router = useRouter();
-  const [bookedSessions] = useState<BookedSession[]>(mockBookedSessions);
+  const { sessions, loading: sessionsLoading, error } = useSessions();
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -58,11 +59,11 @@ export function StudentDashboard() {
     return colors[index];
   };
 
-  const upcomingSessions = bookedSessions.filter(
-    (session) => session.status === "Confirmed" || session.status === "Pending"
+  const upcomingSessions = sessions.filter(
+    (session) => session.status === "Booked" || session.status === "Confirmed"
   );
 
-  const completedSessions = bookedSessions.filter(
+  const completedSessions = sessions.filter(
     (session) => session.status === "Completed"
   );
 
@@ -73,6 +74,20 @@ export function StudentDashboard() {
         <div className="flex items-center gap-2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
           <span>Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state for sessions
+  if (sessionsLoading) {
+    return (
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading sessions...</span>
+          </div>
         </div>
       </div>
     );
@@ -89,7 +104,7 @@ export function StudentDashboard() {
                 <p className="text-sm font-medium text-muted-foreground">
                   Total Sessions
                 </p>
-                <p className="text-2xl font-bold">{bookedSessions.length}</p>
+                <p className="text-2xl font-bold">{sessions.length}</p>
               </div>
               <Video className="h-8 w-8 text-primary" />
             </div>
@@ -164,7 +179,7 @@ export function StudentDashboard() {
           </Button>
         </div>
 
-        {bookedSessions.length === 0 ? (
+        {sessions.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Video className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
@@ -184,7 +199,7 @@ export function StudentDashboard() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {bookedSessions.map((session) => (
+            {sessions.map((session) => (
               <Card
                 key={session.id}
                 className="hover:shadow-lg transition-shadow"
@@ -192,15 +207,30 @@ export function StudentDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold ${getInitialsColor(session.mentorInitials)}`}
-                      >
-                        {session.mentorInitials}
-                      </div>
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage
+                          src={session.mentor.profilePictureUrl || undefined}
+                        />
+                        <AvatarFallback
+                          className={`${getInitialsColor(
+                            session.mentor.fullName
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                          )}`}
+                        >
+                          {session.mentor.fullName
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
-                        <h3 className="font-semibold">{session.mentorName}</h3>
+                        <h3 className="font-semibold">
+                          {session.mentor.fullName}
+                        </h3>
                         <p className="text-sm text-muted-foreground">
-                          {session.subjects.join(", ")}
+                          {session.mentor.professionalRole}
                         </p>
                       </div>
                     </div>
@@ -220,7 +250,8 @@ export function StudentDashboard() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     <span>
-                      {session.sessionTime} ({session.duration})
+                      {format(new Date(session.sessionDate), "HH:mm")} (
+                      {session.durationHours} hours)
                     </span>
                   </div>
 

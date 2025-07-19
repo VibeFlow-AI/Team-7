@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { useMentors } from "@/hooks/use-mentors";
 import {
-  mockMentors,
   sessionDurationOptions,
   subjectOptions,
   languageOptions,
   studentLevelOptions,
+  mockMentors,
 } from "@/lib/mock-data";
 import {
   getFilteredRecommendations,
@@ -24,31 +25,53 @@ import StudentLayout from "../../student-layout";
 
 export default function StudentDiscoverPage() {
   const { userProfile, loading } = useAuth();
-  const [filteredMentors, setFilteredMentors] = useState(mockMentors);
+  const { mentors, loading: mentorsLoading, error } = useMentors();
+  const [filteredMentors, setFilteredMentors] = useState(mentors);
   const [filters, setFilters] = useState<FilterOptions>({});
   const [isFiltering, setIsFiltering] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
   // Apply filters and get personalized recommendations
   useEffect(() => {
-    if (!userProfile || !userProfile.studentProfile) return;
+    if (!userProfile || !userProfile.studentProfile || !mentors.length) return;
 
     setIsFiltering(true);
 
     // Use setTimeout to simulate processing time for better UX
     const timer = setTimeout(() => {
-      const recommendations = getFilteredRecommendations(
-        userProfile,
-        mockMentors,
-        filters,
-        12
-      );
-      setFilteredMentors(recommendations);
+      // Simple filtering based on available mentor data
+      let filtered = mentors;
+
+      if (filters.subjects && filters.subjects.length > 0) {
+        filtered = filtered.filter((mentor) =>
+          filters.subjects!.some((subject) =>
+            mentor.subjectsToTeach.includes(subject)
+          )
+        );
+      }
+
+      if (filters.location) {
+        filtered = filtered.filter((mentor) =>
+          mentor.currentLocation
+            ?.toLowerCase()
+            .includes(filters.location!.toLowerCase())
+        );
+      }
+
+      if (filters.studentLevels && filters.studentLevels.length > 0) {
+        filtered = filtered.filter((mentor) =>
+          filters.studentLevels!.some((level) =>
+            mentor.preferredStudentLevels.includes(level)
+          )
+        );
+      }
+
+      setFilteredMentors(filtered);
       setIsFiltering(false);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [userProfile, filters]);
+  }, [userProfile, mentors, filters]);
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
