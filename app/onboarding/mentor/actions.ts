@@ -70,7 +70,7 @@ export async function createMentorProfile(formData: MentorFormData) {
       data: { role: "MENTOR" },
     });
 
-    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/mentor");
     revalidatePath("/onboarding");
 
     return { success: true, message: "Mentor profile created successfully" };

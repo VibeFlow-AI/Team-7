@@ -11,7 +11,8 @@ export default function HomeClient() {
       if (!user) {
         redirect("/sign-in");
       } else {
-        redirect("/dashboard");
+        // This component is only used on the landing page, so we'll let the landing page handle the redirect
+        redirect("/");
       }
     }
   }, [user, loading]);
