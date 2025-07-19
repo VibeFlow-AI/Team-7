@@ -17,6 +17,12 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ text });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Log the full error for internal debugging
+    console.error("Error in generate API:", error);
+    // Return a generic error message to the client
+    return NextResponse.json(
+      { error: "An unexpected error occurred." },
+      { status: 500 }
+    );
   }
 }
