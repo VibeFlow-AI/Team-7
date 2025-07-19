@@ -20,15 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { RouteGuard } from "@/components/route-guard";
 import { useAuth } from "@/components/auth-provider";
 import { Loader2 } from "lucide-react";
 
-// We will create this server action next
-// import { createStudentProfile } from "./actions";
-
-export default function StudentOnboardingPage() {
+export default function MentorOnboardingPage() {
   const { userProfile, loading } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -36,13 +33,14 @@ export default function StudentOnboardingPage() {
     age: "",
     email: "",
     contactNumber: "",
-    educationLevel: "",
-    school: "",
-    subjects: "",
-    currentYear: "",
-    learningStyle: "",
-    accommodations: "No",
-    accommodationsDetail: "",
+    professionalRole: "",
+    currentLocation: "",
+    shortBio: "",
+    subjectsToTeach: "",
+    teachingExperience: "",
+    preferredStudentLevels: "",
+    linkedInProfile: "",
+    githubOrPortfolio: "",
   });
   const router = useRouter();
 
@@ -57,7 +55,7 @@ export default function StudentOnboardingPage() {
 
   const handleFormSubmit = async () => {
     alert("Submitting form... (Server action to be connected)");
-    // const result = await createStudentProfile(formData);
+    // const result = await createMentorProfile(formData);
     // if (result.success) {
     //   router.push("/dashboard");
     // } else {
@@ -77,20 +75,20 @@ export default function StudentOnboardingPage() {
   }
 
   return (
-    <RouteGuard requireAuth={true} requireRole="STUDENT">
+    <RouteGuard requireAuth={true} requireRole="MENTOR">
       <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-2xl">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">
-              Student Onboarding
+              Mentor Onboarding
             </CardTitle>
             <CardDescription>
               Part {step} of 3:{" "}
               {step === 1
-                ? "Who Are You?"
+                ? "Personal Information"
                 : step === 2
-                  ? "Academic Background"
-                  : "Subject & Skill Assessment"}
+                  ? "Professional Background"
+                  : "Teaching Preferences"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -137,43 +135,63 @@ export default function StudentOnboardingPage() {
                     onChange={handleChange}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currentLocation">Current Location</Label>
+                  <Input
+                    id="currentLocation"
+                    name="currentLocation"
+                    value={formData.currentLocation}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             )}
 
             {step === 2 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="educationLevel">
-                    Current Education Level
-                  </Label>
-                  <Select
-                    name="educationLevel"
-                    onValueChange={(value) =>
-                      handleSelectChange("educationLevel", value)
-                    }
-                  >
-                    <SelectTrigger id="educationLevel">
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Grade 9">Grade 9</SelectItem>
-                      <SelectItem value="Ordinary Level">
-                        Ordinary Level
-                      </SelectItem>
-                      <SelectItem value="Advanced Level">
-                        Advanced Level
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="professionalRole">Professional Role</Label>
+                  <Input
+                    id="professionalRole"
+                    name="professionalRole"
+                    value={formData.professionalRole}
+                    onChange={handleChange}
+                    placeholder="e.g., Software Engineer, Teacher, Researcher"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="school">School</Label>
-                  <Input
-                    id="school"
-                    name="school"
-                    value={formData.school}
+                  <Label htmlFor="shortBio">Short Bio</Label>
+                  <Textarea
+                    id="shortBio"
+                    name="shortBio"
+                    value={formData.shortBio}
                     onChange={handleChange}
+                    placeholder="Tell us about your background and expertise..."
+                    rows={4}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="teachingExperience">
+                    Teaching Experience
+                  </Label>
+                  <Select
+                    name="teachingExperience"
+                    onValueChange={(value) =>
+                      handleSelectChange("teachingExperience", value)
+                    }
+                  >
+                    <SelectTrigger id="teachingExperience">
+                      <SelectValue placeholder="Select experience level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Less than 1 year">
+                        Less than 1 year
+                      </SelectItem>
+                      <SelectItem value="1-3 years">1-3 years</SelectItem>
+                      <SelectItem value="3-5 years">3-5 years</SelectItem>
+                      <SelectItem value="5+ years">5+ years</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
@@ -181,79 +199,52 @@ export default function StudentOnboardingPage() {
             {step === 3 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="subjects">
-                    Subjects of Interest (comma-separated)
+                  <Label htmlFor="subjectsToTeach">
+                    Subjects You Can Teach (comma-separated)
                   </Label>
                   <Input
-                    id="subjects"
-                    name="subjects"
-                    value={formData.subjects}
+                    id="subjectsToTeach"
+                    name="subjectsToTeach"
+                    value={formData.subjectsToTeach}
                     onChange={handleChange}
+                    placeholder="e.g., Mathematics, Physics, Programming"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentYear">Current Year</Label>
+                  <Label htmlFor="preferredStudentLevels">
+                    Preferred Student Levels (comma-separated)
+                  </Label>
                   <Input
-                    id="currentYear"
-                    name="currentYear"
-                    type="number"
-                    value={formData.currentYear}
+                    id="preferredStudentLevels"
+                    name="preferredStudentLevels"
+                    value={formData.preferredStudentLevels}
                     onChange={handleChange}
+                    placeholder="e.g., Grade 9, Ordinary Level, Advanced Level"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Preferred Learning Style</Label>
-                  <Select
-                    name="learningStyle"
-                    onValueChange={(value) =>
-                      handleSelectChange("learningStyle", value)
-                    }
-                  >
-                    <SelectTrigger id="learningStyle">
-                      <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Visual">Visual</SelectItem>
-                      <SelectItem value="Hands-On">Hands-On</SelectItem>
-                      <SelectItem value="Theoretical">Theoretical</SelectItem>
-                      <SelectItem value="Mixed">Mixed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="linkedInProfile">LinkedIn Profile URL</Label>
+                  <Input
+                    id="linkedInProfile"
+                    name="linkedInProfile"
+                    type="url"
+                    value={formData.linkedInProfile}
+                    onChange={handleChange}
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>
-                    Do you have any learning disabilities or accommodations
-                    needed?
+                  <Label htmlFor="githubOrPortfolio">
+                    GitHub or Portfolio URL (Optional)
                   </Label>
-                  <RadioGroup
-                    name="accommodations"
-                    defaultValue="No"
-                    onValueChange={(value) =>
-                      handleSelectChange("accommodations", value)
-                    }
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Yes" id="acc-yes" />
-                      <Label htmlFor="acc-yes">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="No" id="acc-no" />
-                      <Label htmlFor="acc-no">No</Label>
-                    </div>
-                  </RadioGroup>
-                  {formData.accommodations === "Yes" && (
-                    <div className="space-y-2 pt-2">
-                      <Label htmlFor="accommodationsDetail">
-                        Please describe
-                      </Label>
-                      <Input
-                        id="accommodationsDetail"
-                        name="accommodationsDetail"
-                        value={formData.accommodationsDetail}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  )}
+                  <Input
+                    id="githubOrPortfolio"
+                    name="githubOrPortfolio"
+                    type="url"
+                    value={formData.githubOrPortfolio}
+                    onChange={handleChange}
+                    placeholder="https://github.com/yourusername"
+                  />
                 </div>
               </div>
             )}
