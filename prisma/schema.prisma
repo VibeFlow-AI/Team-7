@@ -11,27 +11,70 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// This model represents a user's public profile.
-// It is designed to extend the built-in Supabase auth.users table.
-model Profile {
-  // This 'id' is a foreign key that MUST match the 'id'
-  // from the Supabase auth.users table.
-  // The default value is set by our SQL trigger, not by Prisma.
-  id        String   @id @db.Uuid
-
-  firstName String?
-  lastName  String?
-  imageUrl  String?
-
-  // We are mapping this model to a table named 'profiles' in our database.
-  @@map("profiles")
+// Enum for user roles
+enum Role {
+  STUDENT
+  MENTOR
 }
 
-model Sample {
-  id String @id @default(cuid())
+// Extends the Supabase auth.users table
+model User {
+  id    String @id @db.Uuid
+  role  Role
+  email String @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  studentProfile Student?
+  mentorProfile  Mentor?
 
-  @@map("samples")
+  @@map("users")
+}
+
+model Student {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique @db.Uuid
+  user                    User      @relation(fields: [userId], references: [id])
+  fullName                String
+  age                     Int
+  contactNumber           String?
+  currentEducationLevel   String // e.g., "Grade 9", "Ordinary Level", "Advanced Level"
+  school                  String?
+  subjectsOfInterest      String[]
+  preferredLearningStyle  String? // e.g., "Visual", "Hands-On"
+  learningDisabilities    String?
+
+  bookedSessions Session[]
+}
+
+model Mentor {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique @db.Uuid
+  user                    User      @relation(fields: [userId], references: [id])
+  fullName                String
+  age                     Int
+  contactNumber           String?
+  preferredLanguage       String[]
+  currentLocation         String?
+  shortBio                String
+  professionalRole        String
+  subjectsToTeach         String[]
+  teachingExperience      String // e.g., "1-3 years", "5+ years"
+  preferredStudentLevels  String[] // e.g., "Grade 6-9", "Advanced Level"
+  linkedInProfile         String
+  githubOrPortfolio       String?
+  profilePictureUrl       String?
+
+  sessions Session[]
+}
+
+model Session {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id])
+  mentorId      String
+  mentor        Mentor   @relation(fields: [mentorId], references: [id])
+  sessionDate   DateTime
+  durationHours Int      @default(2)
+  status        String   @default("Booked") // e.g., "Booked", "Completed", "Cancelled"
+  bankSlipUrl   String
+  createdAt     DateTime @default(now())
 }
