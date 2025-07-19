@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RouteGuard } from "@/components/route-guard";
 import { useAuth } from "@/components/auth-provider";
 import { Loader2 } from "lucide-react";
+import { createMentorProfile } from "./actions";
 
 export default function MentorOnboardingPage() {
   const { userProfile, loading } = useAuth();
@@ -33,34 +34,100 @@ export default function MentorOnboardingPage() {
     age: "",
     email: "",
     contactNumber: "",
-    professionalRole: "",
+    preferredLanguage: "English",
     currentLocation: "",
     shortBio: "",
+    professionalRole: "",
     subjectsToTeach: "",
     teachingExperience: "",
     preferredStudentLevels: "",
     linkedInProfile: "",
     githubOrPortfolio: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const router = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field when user makes a selection
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = "Full name is required";
+    }
+
+    if (!formData.age || parseInt(formData.age) < 1) {
+      newErrors.age = "Valid age is required";
+    }
+
+    if (!formData.contactNumber.trim()) {
+      newErrors.contactNumber = "Contact number is required";
+    }
+
+    if (!formData.professionalRole.trim()) {
+      newErrors.professionalRole = "Professional role is required";
+    }
+
+    if (!formData.shortBio.trim()) {
+      newErrors.shortBio = "Short bio is required";
+    }
+
+    if (!formData.teachingExperience) {
+      newErrors.teachingExperience = "Teaching experience is required";
+    }
+
+    if (!formData.subjectsToTeach.trim()) {
+      newErrors.subjectsToTeach = "Subjects to teach are required";
+    }
+
+    if (!formData.preferredStudentLevels.trim()) {
+      newErrors.preferredStudentLevels =
+        "Preferred student levels are required";
+    }
+
+    if (!formData.linkedInProfile.trim()) {
+      newErrors.linkedInProfile = "LinkedIn profile URL is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleFormSubmit = async () => {
-    alert("Submitting form... (Server action to be connected)");
-    // const result = await createMentorProfile(formData);
-    // if (result.success) {
-    //   router.push("/dashboard");
-    // } else {
-    //   alert(result.message);
-    // }
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await createMentorProfile(formData);
+      if (result.success) {
+        router.push("/dashboard");
+      } else {
+        alert(result.message);
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -75,7 +142,7 @@ export default function MentorOnboardingPage() {
   }
 
   return (
-    <RouteGuard requireAuth={true} requireRole="MENTOR">
+    <RouteGuard requireAuth={true}>
       <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-2xl">
           <CardHeader>
@@ -101,7 +168,11 @@ export default function MentorOnboardingPage() {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
+                    className={errors.fullName ? "border-red-500" : ""}
                   />
+                  {errors.fullName && (
+                    <p className="text-sm text-red-500">{errors.fullName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="age">Age</Label>
@@ -111,7 +182,11 @@ export default function MentorOnboardingPage() {
                     type="number"
                     value={formData.age}
                     onChange={handleChange}
+                    className={errors.age ? "border-red-500" : ""}
                   />
+                  {errors.age && (
+                    <p className="text-sm text-red-500">{errors.age}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
@@ -119,10 +194,9 @@ export default function MentorOnboardingPage() {
                     id="email"
                     name="email"
                     type="email"
-                    value={formData.email}
+                    value={userProfile?.email || ""}
                     onChange={handleChange}
                     disabled
-                    defaultValue={userProfile?.email}
                   />
                 </div>
                 <div className="space-y-2">
@@ -133,7 +207,32 @@ export default function MentorOnboardingPage() {
                     type="tel"
                     value={formData.contactNumber}
                     onChange={handleChange}
+                    className={errors.contactNumber ? "border-red-500" : ""}
                   />
+                  {errors.contactNumber && (
+                    <p className="text-sm text-red-500">
+                      {errors.contactNumber}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferredLanguage">Preferred Language</Label>
+                  <Select
+                    name="preferredLanguage"
+                    onValueChange={(value) =>
+                      handleSelectChange("preferredLanguage", value)
+                    }
+                  >
+                    <SelectTrigger id="preferredLanguage">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Sinhala">Sinhala</SelectItem>
+                      <SelectItem value="Tamil">Tamil</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currentLocation">Current Location</Label>
@@ -157,7 +256,13 @@ export default function MentorOnboardingPage() {
                     value={formData.professionalRole}
                     onChange={handleChange}
                     placeholder="e.g., Software Engineer, Teacher, Researcher"
+                    className={errors.professionalRole ? "border-red-500" : ""}
                   />
+                  {errors.professionalRole && (
+                    <p className="text-sm text-red-500">
+                      {errors.professionalRole}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="shortBio">Short Bio</Label>
@@ -168,7 +273,11 @@ export default function MentorOnboardingPage() {
                     onChange={handleChange}
                     placeholder="Tell us about your background and expertise..."
                     rows={4}
+                    className={errors.shortBio ? "border-red-500" : ""}
                   />
+                  {errors.shortBio && (
+                    <p className="text-sm text-red-500">{errors.shortBio}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="teachingExperience">
@@ -180,7 +289,12 @@ export default function MentorOnboardingPage() {
                       handleSelectChange("teachingExperience", value)
                     }
                   >
-                    <SelectTrigger id="teachingExperience">
+                    <SelectTrigger
+                      id="teachingExperience"
+                      className={
+                        errors.teachingExperience ? "border-red-500" : ""
+                      }
+                    >
                       <SelectValue placeholder="Select experience level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -192,6 +306,11 @@ export default function MentorOnboardingPage() {
                       <SelectItem value="5+ years">5+ years</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.teachingExperience && (
+                    <p className="text-sm text-red-500">
+                      {errors.teachingExperience}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -208,7 +327,13 @@ export default function MentorOnboardingPage() {
                     value={formData.subjectsToTeach}
                     onChange={handleChange}
                     placeholder="e.g., Mathematics, Physics, Programming"
+                    className={errors.subjectsToTeach ? "border-red-500" : ""}
                   />
+                  {errors.subjectsToTeach && (
+                    <p className="text-sm text-red-500">
+                      {errors.subjectsToTeach}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="preferredStudentLevels">
@@ -220,7 +345,15 @@ export default function MentorOnboardingPage() {
                     value={formData.preferredStudentLevels}
                     onChange={handleChange}
                     placeholder="e.g., Grade 9, Ordinary Level, Advanced Level"
+                    className={
+                      errors.preferredStudentLevels ? "border-red-500" : ""
+                    }
                   />
+                  {errors.preferredStudentLevels && (
+                    <p className="text-sm text-red-500">
+                      {errors.preferredStudentLevels}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="linkedInProfile">LinkedIn Profile URL</Label>
@@ -231,7 +364,13 @@ export default function MentorOnboardingPage() {
                     value={formData.linkedInProfile}
                     onChange={handleChange}
                     placeholder="https://linkedin.com/in/yourprofile"
+                    className={errors.linkedInProfile ? "border-red-500" : ""}
                   />
+                  {errors.linkedInProfile && (
+                    <p className="text-sm text-red-500">
+                      {errors.linkedInProfile}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="githubOrPortfolio">
@@ -251,21 +390,68 @@ export default function MentorOnboardingPage() {
           </CardContent>
           <CardFooter className="flex justify-between">
             {step > 1 && (
-              <Button variant="outline" onClick={() => setStep(step - 1)}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setStep(step - 1);
+                  // Clear errors when going back
+                  setErrors({});
+                }}
+              >
                 Back
               </Button>
             )}
             {step < 3 && (
               <Button
-                onClick={() => setStep(step + 1)}
+                onClick={() => {
+                  // Validate current step before proceeding
+                  const currentStepErrors: Record<string, string> = {};
+
+                  if (step === 1) {
+                    if (!formData.fullName.trim())
+                      currentStepErrors.fullName = "Full name is required";
+                    if (!formData.age || parseInt(formData.age) < 1)
+                      currentStepErrors.age = "Valid age is required";
+                    if (!formData.contactNumber.trim())
+                      currentStepErrors.contactNumber =
+                        "Contact number is required";
+                  } else if (step === 2) {
+                    if (!formData.professionalRole.trim())
+                      currentStepErrors.professionalRole =
+                        "Professional role is required";
+                    if (!formData.shortBio.trim())
+                      currentStepErrors.shortBio = "Short bio is required";
+                    if (!formData.teachingExperience)
+                      currentStepErrors.teachingExperience =
+                        "Teaching experience is required";
+                  }
+
+                  if (Object.keys(currentStepErrors).length > 0) {
+                    setErrors(currentStepErrors);
+                    return;
+                  }
+
+                  setStep(step + 1);
+                }}
                 className={step === 1 ? "ml-auto" : ""}
               >
                 Next
               </Button>
             )}
             {step === 3 && (
-              <Button onClick={handleFormSubmit} className="ml-auto">
-                Complete Setup
+              <Button
+                onClick={handleFormSubmit}
+                className="ml-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Completing Setup...
+                  </>
+                ) : (
+                  "Complete Setup"
+                )}
               </Button>
             )}
           </CardFooter>

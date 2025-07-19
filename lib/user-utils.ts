@@ -26,10 +26,28 @@ export function isGuestUser(role: UserRole): boolean {
   return role === "GUEST";
 }
 
-export function requiresOnboarding(role: UserRole): boolean {
-  return role === "GUEST";
+export function requiresOnboarding(userProfile: UserProfile): boolean {
+  // Guest users always need onboarding
+  if (userProfile.role === "GUEST") {
+    return true;
+  }
+
+  // STUDENT users need onboarding if they don't have a student profile
+  if (userProfile.role === "STUDENT" && !userProfile.studentProfile) {
+    return true;
+  }
+
+  // MENTOR users need onboarding if they don't have a mentor profile
+  if (userProfile.role === "MENTOR" && !userProfile.mentorProfile) {
+    return true;
+  }
+
+  return false;
 }
 
-export function canAccessDashboard(role: UserRole): boolean {
-  return role === "STUDENT" || role === "MENTOR";
+export function canAccessDashboard(userProfile: UserProfile): boolean {
+  return (
+    (userProfile.role === "STUDENT" && !!userProfile.studentProfile) ||
+    (userProfile.role === "MENTOR" && !!userProfile.mentorProfile)
+  );
 }

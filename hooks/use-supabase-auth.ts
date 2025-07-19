@@ -75,6 +75,12 @@ export function useSupabaseAuth() {
       if (response.ok) {
         const data = await response.json();
         setUserProfile(data.user);
+
+        // Refetch profile to ensure we have the latest data
+        if (user?.id) {
+          await fetchUserProfile(user.id);
+        }
+
         return data.user;
       } else {
         throw new Error("Failed to update user role");
@@ -143,10 +149,8 @@ export function useSupabaseAuth() {
 
   // Helper functions for role-based access
   const isGuest = userProfile ? isGuestUser(userProfile.role) : false;
-  const needsOnboarding = userProfile
-    ? requiresOnboarding(userProfile.role)
-    : false;
-  const canAccess = userProfile ? canAccessDashboard(userProfile.role) : false;
+  const needsOnboarding = userProfile ? requiresOnboarding(userProfile) : false;
+  const canAccess = userProfile ? canAccessDashboard(userProfile) : false;
 
   return {
     session,
