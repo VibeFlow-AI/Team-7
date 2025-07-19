@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 justify-center items-center">
         <Hero />
         <StudentFeatures />
         <SessionHighlights />
